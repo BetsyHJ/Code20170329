@@ -3,4 +3,5 @@
 
 
 
-#install#
+## install
+install keras https://github.com/ogrisel/keras
