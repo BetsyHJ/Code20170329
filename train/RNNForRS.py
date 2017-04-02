@@ -71,7 +71,16 @@ def createData(sequences, maxlen, item_value, FeaLength):
 def runModel(trainX, trainY, model):
     error = model.train_on_batch(trainX, trainY)
     print "error is", error
-    return model
+    #return model
+
+def saveModel(model, sequences, maxlen, item_value, FeaLength):
+    # for every sequence we just need the final maxlen data, so we set Y as final item, default value
+    sequences_FinalMaxlen = []
+    for seq in sequences:
+        sequences_FinalMaxlen.append(seq[-maxlen : ] + [seq[-1]])
+    validX, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
+    output = model.predict(validX, batch_size = 32)
+    print output
 
 if __name__ == "__main__":
 
@@ -105,9 +114,11 @@ if __name__ == "__main__":
                 sequences_batch = sequences[i*batch_size : ((i + 1) * batch_size)]
             trainX, trainY = createData(sequences_batch, maxlen, items_value, FeaLength)
             # for every batch sequences, we train and update the model
-            model = runModel(trainX, trainY, model)
+            runModel(trainX, trainY, model)
 
     # evaluate the model
     scores = model.evaluate(trainX, trainY)
     print scores
 
+    #save the output of the input
+    saveModel(model, sequences, maxlen, items_value, FeaLength)
