@@ -62,30 +62,51 @@ def createData(sequences, maxlen, item_value, FeaLength):
                 trainX.append(seq_vector[index : (index + maxlen)])
                 trainY.append(seq_vector[index + maxlen])
     print "the number of training samples is :", len(trainY)
-    trainX = np.array(trainX, dtype = 'float32')#.reshape(, maxlen, FeaLength)
-    trainY = np.array(trainY, dtype = 'float32')#.reshape(, maxlen, FeaLength)
+    #print "trainX is", trainX
+    #print len(trainY), maxlen, FeaLength
+    trainX = np.array(trainX, dtype = 'float32').reshape(len(trainY), maxlen, FeaLength)
+    trainY = np.array(trainY, dtype = 'float32')#.reshape(len(trainY), 1, FeaLength)
     return trainX, trainY
+
+def runModel(trainX, trainY, model):
+    error = model.train_on_batch(trainX, trainY)
+    print "error is", error
+    return model
 
 if __name__ == "__main__":
 
     maxlen = 2
     print "maxlen is :", maxlen
+    batch_num = 10
+
     # read data and features
     itemFeatureFile = sys.argv[1]
     FeaLength, items_value = proPrepare(itemFeatureFile)
     sequencesFile = sys.argv[2]
     sequences = readSequences(sequencesFile)
         
-    # deal the shape of the input data
-    trainX, trainY = createData(sequences, maxlen, items_value, FeaLength)
+    # deal the shape of the input data, but because the data is big, we can not load the data in one time
+    # trainX, trainY = createData(sequences, maxlen, items_value, FeaLength)
 
     # define the model
-    inputDim = trainX.shape[2]
+    inputDim = FeaLength #trainX.shape[2]
     print "the input dimension is", inputDim
     model = RNN_for_RS(maxlen, inputDim)
 
     # run the model
-    model.fit(trainX, trainY, epochs = 100, batch_size = 8)
+    ## model.fit(trainX, trainY, epochs = 100, batch_size = 8)
+    ## the data is big, so we have to use batch to deal data
+    batch_size = int(len(sequences) / batch_num)
+    for iter in range(10): #for all sequence, we want set epoch 10
+        for i in range(batch_num): #for the batch of the sequences
+            if i == (batch_num - 1):
+                sequences_batch = sequences[i*batch_size : ]
+            else:
+                sequences_batch = sequences[i*batch_size : ((i + 1) * batch_size)]
+            trainX, trainY = createData(sequences_batch, maxlen, items_value, FeaLength)
+            # for every batch sequences, we train and update the model
+            model = runModel(trainX, trainY, model)
+
     # evaluate the model
     scores = model.evaluate(trainX, trainY)
     print scores

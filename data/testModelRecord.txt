@@ -2,3 +2,23 @@ doc1 A B C E
 doc2 A B C D
 doc3 A C D
 doc4 A D B
+doc1 A B C E
+doc2 A B C D
+doc3 A C D
+doc4 A D B
+doc1 A B C E
+doc2 A B C D
+doc3 A C D
+doc4 A D B
+doc1 A B C E
+doc2 A B C D
+doc3 A C D
+doc4 A D B
+doc1 A B C E
+doc2 A B C D
+doc3 A C D
+doc4 A D B
+doc1 A B C E
+doc2 A B C D
+doc3 A C D
+doc4 A D B
