@@ -74,13 +74,26 @@ def runModel(trainX, trainY, model):
     #return model
 
 def saveModel(model, sequences, maxlen, item_value, FeaLength):
+    if len(sys.argv) > 3:
+        save_file = sys.argv[3]
+    else:
+        save_file = "userCurrentEmbedding.txt"
+    f = open(save_file, 'w')
+
     # for every sequence we just need the final maxlen data, so we set Y as final item, default value
     sequences_FinalMaxlen = []
     for seq in sequences:
         sequences_FinalMaxlen.append(seq[-maxlen : ] + [seq[-1]])
     validX, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
     output = model.predict(validX, batch_size = 32)
-    print output
+    
+    # save the output array into file
+    for i in range(output.shape[0]):
+        for j in range(output.shape[1]):
+            f.write(str(output[i][j]) + " ")
+        f.write("\n")
+    f.close()
+    #print output
 
 if __name__ == "__main__":
 
