@@ -6,3 +6,7 @@ install keras https://github.com/ogrisel/keras
 cd train
 python RNNForRS.py ../data/testModelFeature.txt ../data/testModelRecord2.py
 ```
+You can also use command to set the output file
+```
+python RNNForRS.py ../data/testModelFeature.txt ../data/testModelRecord2.py Output.txt
+```
