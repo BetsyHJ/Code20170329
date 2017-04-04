@@ -78,7 +78,7 @@ def saveModel(model, sequences, maxlen, item_value, FeaLength):
         save_file = sys.argv[3]
     else:
         save_file = "userCurrentEmbedding.txt"
-    f = open(save_file, 'w')
+    f = open(save_file, 'a')
 
     # for every sequence we just need the final maxlen data, so we set Y as final item, default value
     sequences_FinalMaxlen = []
@@ -94,6 +94,17 @@ def saveModel(model, sequences, maxlen, item_value, FeaLength):
         f.write("\n")
     f.close()
     #print output
+
+def saveModelByBatch(model, sequences, maxlen, item_value, FeaLength):
+    batch_num = 10
+    batch_size = int(round(1.0 * len(sequences) / batch_num))
+    for i in range(batch_num): #for the batch of the sequences
+        if i == (batch_num - 1):
+            sequences_batch = sequences[i*batch_size : ]
+        else:
+            sequences_batch = sequences[i*batch_size : ((i + 1) * batch_size)]    
+        saveModel(model, sequences_batch, maxlen, item_value, FeaLength)
+
 
 if __name__ == "__main__":
 
@@ -118,7 +129,7 @@ if __name__ == "__main__":
     # run the model
     ## model.fit(trainX, trainY, epochs = 100, batch_size = 8)
     ## the data is big, so we have to use batch to deal data
-    batch_size = int(len(sequences) / batch_num)
+    batch_size = int(round(1.0 * len(sequences) / batch_num))
     for iter in range(10): #for all sequence, we want set epoch 10
         for i in range(batch_num): #for the batch of the sequences
             if i == (batch_num - 1):
@@ -134,4 +145,4 @@ if __name__ == "__main__":
     print scores
 
     #save the output of the input
-    saveModel(model, sequences, maxlen, items_value, FeaLength)
+    saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
