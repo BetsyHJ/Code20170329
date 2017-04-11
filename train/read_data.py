@@ -1,4 +1,4 @@
-import re, sys, os, numpy as np, theano
+import re, sys, os, numpy as np#, theano
 floatX = np.float32
 def get_vector(filename, flag):#flag for the first info 
     file = open(filename) 
@@ -16,8 +16,8 @@ def get_vector(filename, flag):#flag for the first info
         line = c_data[i]
         temp_str = re.split("\t| |\n", line)
         t = []
-        if temp_str[0] == "33440103" or temp_str[0] == "18261991":  # data error
-            continue
+        #if temp_str[0] == "33440103" or temp_str[0] == "18261991":  # data error
+        #    continue
 	#user.append(temp_str[0])
         for j in range(1, len(temp_str)):
         #print j, temp_str[j]
