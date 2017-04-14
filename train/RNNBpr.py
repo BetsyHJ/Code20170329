@@ -9,6 +9,8 @@ from keras.layers.normalization import BatchNormalization
 from keras import backend as K
 
 import numpy as np
+from theano import tensor as T
+from numpy import random
 import re, sys, os
 from read_data import get_vector
 from RNNForRS import *
@@ -20,10 +22,8 @@ def bpr_batch(y_true, y_pred):
     cost = K.dot(scores, t) - scores
     return K.cast(K.mean(-K.log(K.sigmoid(scores))), float)
 def bpr(y_true, y_pred): #dim-2 1*d ; dim-2
-    scores = K.dot(y_pred, y_true.T)
-    t = np.zeros(11); t[0] = 1;
-    cost = K.dot(scores, t)
-    return K.cast(K.mean(-K.log(K.sigmoid(cost - scores))), theano.config.floatX)
+    score = T.diag(K.dot(y_true, y_pred.T))
+    return K.mean(-K.log(K.sigmoid(T.diag(score) - score.T)), axis = -1)
     
 def RNN_bpr(maxlen, inputDim):
     model = Sequential()
@@ -60,16 +60,21 @@ def runModelBPR(model, sequences, maxlen, item_value, FeaLength, sample_num = 5)
             seq_vector.append(item_value[item])
         # using sliding window to get train data   
         error = []
+	samples = neg_sample(seq[index + maxlen :], item_value) # return the vectors
+	samples_size = len(samples)
         for index in range(seqLength):
             if index + maxlen >= seqLength:
                 break
             else:
-                samples = neg_sample(seq[index + maxlen :], item_value) # return the vectors
-                trainX = [seq_vector[index : (index + maxlen)]]
+                #samples = neg_sample(seq[index + maxlen :], item_value) # return the vectors
+                trainX = [seq_vector[index : (index + maxlen)] for copy in range(1 + samples_size)]
                 trainY = [seq_vector[index + maxlen]] + samples
-                trainX = np.array(trainX, dtype = 'float32').reshape(1, maxlen, FeaLength)
+                trainX = np.array(trainX, dtype = 'float32').reshape(1 + samples_size, maxlen, FeaLength)
                 trainY = np.array(trainY, dtype = 'float32')
-                error.append(runModel(trainX, trainY, model))
+		er = runModel(trainX, trainY, model)
+		#print er
+		error.append(er)
+                #error.append(runModel(trainX, trainY, model))
         print "the error is ", np.mean(error)
 
 if __name__ == "__main__":
@@ -89,7 +94,8 @@ if __name__ == "__main__":
     
     #run the model
     for epoch in range(10):
-        runModelBPR(model, sequences, maxlen, item_value, FeaLength)
+        runModelBPR(model, sequences, maxlen, items_value, FeaLength)
         saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
+	print "the iter", epoch, " is over, now it is ", time.strftime("%Y-%m-%d %X",time.localtime())
 
 
