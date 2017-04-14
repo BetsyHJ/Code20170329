@@ -60,7 +60,7 @@ def runModelBPR(model, sequences, maxlen, item_value, FeaLength, sample_num = 5)
             seq_vector.append(item_value[item])
         # using sliding window to get train data   
         error = []
-	samples = neg_sample(seq[index + maxlen :], item_value) # return the vectors
+	samples = neg_sample(seq, item_value) # return the vectors
 	samples_size = len(samples)
         for index in range(seqLength):
             if index + maxlen >= seqLength:
