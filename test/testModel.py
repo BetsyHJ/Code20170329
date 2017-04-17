@@ -90,6 +90,39 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
     print P, R, MAP, MRR
     return P, R, MAP, MRR 
         
+def evaluate_classify(trueResult, candidateResult, UsersVector):
+    ## ItemsVector is useless.
+    P = 0; R = 0; MAP = 0; MRR = 0;
+    # rank the candidate items
+    total_pro = {}
+    for i in candidateResult:
+        score = UsersVector[int(i[1:])-1] #get rid of 'm' flag before movieID
+        total_pro[i] = score
+    total_pro = sorted(total_pro.iteritems(), key=lambda d:d[1], reverse = True)
+    rankedItem = []
+    for (j, _) in total_pro:
+        rankedItem.append(j)
+    # get the evaluation
+    num = [10]
+    right_num = 0
+    trueNum = len(trueResult)
+    count = 0
+    print "the rank is ", total_pro
+    print "the truth is ", trueResult
+    for j in rankedItem:
+        if count == num[0]:
+            P += 1.0 * right_num / count
+            R += 1.0 * right_num / trueNum
+        count += 1
+        if j in trueResult:
+            right_num += 1
+            MAP = MAP + 1.0 * right_num / count
+            if right_num == 1:
+                MRR += 1.0 / count
+    if right_num != 0:
+        MAP /= right_num
+    print P, R, MAP, MRR    
+    return P, R, MAP, MRR
 
 if __name__ == "__main__":
     # readUserItems
@@ -115,7 +148,8 @@ if __name__ == "__main__":
     for u in UserItems:
         trueResult = UserItems[u]
         candidateResult = candidates[u]
-        t_P, t_R, t_MAP, t_MRR = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
+        #t_P, t_R, t_MAP, t_MRR = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
+	t_P, t_R, t_MAP, t_MRR = evaluate_classify(trueResult, candidateResult, UsersVector[u])
         P += t_P; R += t_R; MAP += t_MAP; MRR += t_MRR;
 	#break
     number = len(UserItems)

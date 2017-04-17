@@ -51,7 +51,7 @@ def neg_sample(seq, items_value, sample_num = 10):
         samples.append(items_value[item_t])
     return samples
 
-def runModelBPR(model, sequences, maxlen, item_value, FeaLength, sample_num = 5):
+def runModelBPR(model, sequences, maxlen, item_value, FeaLength, sample_num = 20):
     for seq in sequences: # for each sequences
         seqLength = len(seq)
         #translate the item into vector
@@ -93,9 +93,9 @@ if __name__ == "__main__":
     model = RNN_bpr(maxlen, inputDim)
     
     #run the model
-    for epoch in range(10):
+    for epoch in range(3):
         runModelBPR(model, sequences, maxlen, items_value, FeaLength)
-        saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
+        #saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
 	print "the iter", epoch, " is over, now it is ", time.strftime("%Y-%m-%d %X",time.localtime())
-
+    saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
 

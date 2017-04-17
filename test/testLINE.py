@@ -86,6 +86,7 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
                 MRR += 1.0 / count
     if right_num != 0:
         MAP /= right_num
+    print P, R, MAP, MRR
     return P, R, MAP, MRR 
         
 

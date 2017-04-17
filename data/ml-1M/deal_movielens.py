@@ -66,7 +66,7 @@ def PrintSequence(All_ratings, filename):
 	fp.write("\n")
     fp.close()
 
-def generate_testNega(All_ratings, test_ratings, nega_num = 50):
+def generate_testNega(All_ratings, test_ratings, train_ratings, nega_num = 50):
     # get all items
     fp = open("test_nega.txt", 'w')
     All_items = []
@@ -83,9 +83,12 @@ def generate_testNega(All_ratings, test_ratings, nega_num = 50):
 	#print "item_num is", len(items)
 	if len(items) * (nega_num + 1) >= All_size:
 	    candidates = All_items
+	    #for t_i in train_ratings[user][0]:
+	    #	if t_i in candidates and t_i not in items:
+	    #	    candidates.remove(t_i)
 	else:
             for i in range(len(items)):
-                if scores[i] < 3:  #control by score
+                if scores[i] < 0:  #control by score
                     break
                 candidates.append(items[i])
                 # generate the negative samples
@@ -94,7 +97,7 @@ def generate_testNega(All_ratings, test_ratings, nega_num = 50):
                     while (item_t in items) or (item_t in candidates):
                         item_t = All_items[random.randint(0, All_size - 1)]
                     candidates.append(item_t)
-	print len(candidates)
+	#print len(candidates)
         random.shuffle(candidates)
         fp.write(user + "\t" + " ".join(candidates) + "\n")
     fp.close()
@@ -108,14 +111,24 @@ def cut_train_test_set(All_ratings, ratio): #ratio is float
         test_items, test_scores = items[train_num:], scores[train_num:]
         train_ratings[user] = [train_items, train_scores]
         test_ratings[user] = [test_items, test_scores]
-    PrintLINE(train_ratings, sys.argv[1] + "train" + str(ratio) + "_LINE")
-    PrintLINE(test_ratings, sys.argv[1] + "test" + str(ratio) + "_LINE")
-    PrintSequence(test_ratings, sys.argv[1] + "_test" + str(ratio))
-    PrintBPR(train_ratings, sys.argv[1] + "train" + str(ratio) + "_BPR")
-    #generate_testNega(All_ratings, test_ratings)
-
+    #PrintLINE(train_ratings, sys.argv[1] + "train" + str(ratio) + "_LINE")
+    #PrintLINE(test_ratings, sys.argv[1] + "test" + str(ratio) + "_LINE")
+    #PrintSequence(test_ratings, sys.argv[1] + "_test" + str(ratio))
+    #PrintBPR(train_ratings, sys.argv[1] + "train" + str(ratio) + "_BPR")
+    generate_testNega(All_ratings, test_ratings, train_ratings)
+def analysis(ratings):
+    count = 0
+    count_score = 0
+    for user in ratings:
+	items, scores = All_ratings[user][0], All_ratings[user][1]
+	if len(items) > int(sys.argv[2]):
+    	    count += 1
+	for s in scores:
+	    if int(s) == int(sys.argv[3]):
+		count_score += 1
+    print count, count_score
 if __name__ == "__main__":
     All_ratings = read_ratings(sys.argv[1])
     #PrintLINE(All_ratings, sys.argv[1] + "_LINE")
     cut_train_test_set(All_ratings, 0.8)
-
+    #analysis(All_ratings)

@@ -80,16 +80,28 @@ def createData(sequences, maxlen, item_value, FeaLength):
     trainY = np.array(trainY, dtype = 'float32')#.reshape(len(trainY), 1, FeaLength)
     return trainX, trainY
 
-def runModel(trainX, trainY, model):
-    error = model.train_on_batch(trainX, trainY)
+def runModel(trainX, trainY, model, batch_size = 500):
+    '''
+    number = trainX.shape[0]
+    error = []
+    while 1:
+	if number >= batch_size:
+	    error = model.train_on_batch(trainX[number - batch_size:number], trainY[number - batch_size : number])
+	    number -= batch_size
+	else:
+	    error = model.train_on_batch(trainX[:number], trainY[:number])
+	    break
+    #error /= trainX.shape[0]
     #print "error is", error
+    '''
+    error = model.train_on_batch(trainX, trainY)
     return error
 
 def saveModel(model, sequences, maxlen, item_value, FeaLength):
     if len(sys.argv) > 3:
         save_file = sys.argv[3]
     else:
-        save_file = "userCurrentEmbedding.txt" + str(time.time)
+        save_file = "userCurrentEmbedding.txt" + str(time.time())
     f = open(save_file, 'a')
 
     # for every sequence we just need the final maxlen data, so we set Y as final item, default value
@@ -146,6 +158,7 @@ if __name__ == "__main__":
     ## model.fit(trainX, trainY, epochs = 100, batch_size = 8)
     ## the data is big, so we have to use batch to deal data
     batch_size = int(round(1.0 * len(sequences) / batch_num))
+    '''
     for iter in range(20): #for all sequence, we want set epoch 10
         for i in range(batch_num): #for the batch of the sequences
             if i == (batch_num - 1):
@@ -159,6 +172,6 @@ if __name__ == "__main__":
     # evaluate the model
     #scores = model.evaluate(trainX, trainY)
     #print scores
-
+    '''
     #save the output of the input
     saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
