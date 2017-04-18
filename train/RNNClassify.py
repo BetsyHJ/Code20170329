@@ -39,7 +39,7 @@ def data_generator(sequences, maxlen, item_value, FeaLength, items_count, sample
     item_size = items_count # because the movie index starts from 1 
     for seq in sequences: # for each sequences
         seqLength = len(seq)
-	if seqLength > 200:
+	if seqLength > 1000:
 	    continue
         #translate the item into vector
         seq_vector = []
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     maxlen = 5
     print "maxlen is :", maxlen
-    batch_num = 500
+    batch_num = 2000
 
     # read data and features
     itemFeatureFile = sys.argv[1]
@@ -109,7 +109,7 @@ if __name__ == "__main__":
                 sequences_batch = sequences[i*batch_size : ((i + 1) * batch_size)]
             trainX, trainY = data_generator(sequences_batch, maxlen, items_value, FeaLength, items_count)
 	    #break
-	    #print trainX.shape, trainY.shape
+	    print trainX.shape, trainY.shape
             # for every batch sequences, we train and update the model
 	    if trainX.shape[0] > 0:
     	        error = runModel(trainX, trainY, model)

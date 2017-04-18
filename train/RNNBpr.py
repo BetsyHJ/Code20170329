@@ -30,7 +30,7 @@ def RNN_bpr(maxlen, inputDim):
     model.add(LSTM(512, return_sequences = False, input_shape=(maxlen, inputDim)))
     model.add(Dropout(0.2))
     model.add(Dense(inputDim, activation='relu'))
-    model.add(BatchNormalization())
+    #model.add(BatchNormalization())
     #model.add(Activation('sigmoid'))
     #model.compile(loss = 'binary_crossentropy', optimizer = 'sgd')
     #model.compile(loss = 'mean_squared_error', optimizer = 'sgd')
