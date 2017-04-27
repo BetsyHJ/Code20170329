@@ -39,7 +39,7 @@ def data_generator(sequences, maxlen, item_value, FeaLength, items_count, sample
     item_size = items_count # because the movie index starts from 1 
     for seq in sequences: # for each sequences
         seqLength = len(seq)
-	if seqLength > 1000:
+	if seqLength > 200:
 	    continue
         #translate the item into vector
         seq_vector = []
@@ -51,7 +51,9 @@ def data_generator(sequences, maxlen, item_value, FeaLength, items_count, sample
                 break
             else:
                 trainX.append(seq_vector[index : (index + maxlen)])
-                trainY.append(one_hot(seq[(index + maxlen):], item_size))
+		#print seq[index + maxlen], item_size
+		trainY.append(one_hot([seq[index + maxlen]], item_size))  ## o2o
+                #trainY.append(one_hot(seq[(index + maxlen):], item_size))  ## m2m
     #print "the number of training samples is :", len(trainY)
     #print "trainX is", trainX
     #print len(trainY), maxlen, FeaLength

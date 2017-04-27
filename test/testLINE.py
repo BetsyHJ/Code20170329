@@ -49,6 +49,26 @@ def readCandidates(filename):
     candidates = readpro_nega(filename) #test_nega
     return candidates #dict
 
+def getHitRatio(ranklist, gtItem, control = 10):
+    count = 0
+    for item in ranklist:
+        if item in gtItem:
+            return 1
+        count += 1
+        if count >= control:
+            break
+    return 0
+def getNDCG(ranklist, gtItem, control = 10):
+    count = 0
+    for i in xrange(len(ranklist)):
+        item = ranklist[i]
+        if item in gtItem:
+            return math.log(2) / math.log(i+2)
+        count += 1
+        if count >= control:
+            break
+    return 0
+
 def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
     P = 0; R = 0; MAP = 0; MRR = 0;
     # rank the candidate items
@@ -87,7 +107,9 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
     if right_num != 0:
         MAP /= right_num
     print P, R, MAP, MRR
-    return P, R, MAP, MRR 
+    HR = getHitRatio(rankedItem, trueResult)
+    NDCG = getNDCG(rankedItem, trueResult)
+    return P, R, MAP, MRR, HR, NDCG
         
 
 if __name__ == "__main__":
@@ -111,13 +133,13 @@ if __name__ == "__main__":
     print "The file loading is finished, then to evalute~"
 
     # evaluate
-    P = 0; R = 0; MAP = 0; MRR = 0;
+    P = 0; R = 0; MAP = 0; MRR = 0; HR = 0; NDCG = 0;
     for u in UserItems:
         trueResult = UserItems[u]
         candidateResult = candidates[u]
-        t_P, t_R, t_MAP, t_MRR = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
-        P += t_P; R += t_R; MAP += t_MAP; MRR += t_MRR;
+        t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
+        P += t_P; R += t_R; MAP += t_MAP; MRR += t_MRR; HR += t_HR; NDCG += t_NDCG;
 	#break
     number = len(UserItems)
-    P /= number; R /= number; MAP /= number; MRR /= number;
-    print P, R, MAP, MRR
+    P /= number; R /= number; MAP /= number; MRR /= number; HR = HR * 1.0 / number; NDCG /= number;
+    print P, R, MAP, MRR, HR, NDCG

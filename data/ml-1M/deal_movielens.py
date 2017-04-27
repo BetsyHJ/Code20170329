@@ -116,6 +116,22 @@ def cut_train_test_set(All_ratings, ratio): #ratio is float
     #PrintSequence(test_ratings, sys.argv[1] + "_test" + str(ratio))
     #PrintBPR(train_ratings, sys.argv[1] + "train" + str(ratio) + "_BPR")
     generate_testNega(All_ratings, test_ratings, train_ratings)
+def cut_train_test_set_one_out(All_ratings): 
+    train_ratings, test_ratings = {}, {}
+    for user in All_ratings:
+        items, scores = All_ratings[user][0], All_ratings[user][1]
+        train_num = len(items) - 1
+        train_items, train_scores = items[:train_num], scores[:train_num]
+        test_items, test_scores = items[train_num:], scores[train_num:]
+        train_ratings[user] = [train_items, train_scores]
+        test_ratings[user] = [test_items, test_scores]
+    #PrintLINE(train_ratings, sys.argv[1] + "train" + str(ratio) + "_LINE")
+    #PrintLINE(test_ratings, sys.argv[1] + "test" + str(ratio) + "_LINE")
+    #PrintSequence(test_ratings, sys.argv[1] + "_test.oneout")
+    #PrintSequence(train_ratings, sys.argv[1] + "_train.oneout")
+    #PrintBPR(train_ratings, sys.argv[1] + "train_BPR.oneout")
+    generate_testNega(All_ratings, test_ratings, train_ratings, 99) #nega_num = 100
+
 def analysis(ratings):
     count = 0
     count_score = 0
@@ -130,5 +146,6 @@ def analysis(ratings):
 if __name__ == "__main__":
     All_ratings = read_ratings(sys.argv[1])
     #PrintLINE(All_ratings, sys.argv[1] + "_LINE")
-    cut_train_test_set(All_ratings, 0.8)
+    #cut_train_test_set(All_ratings, 0.8)
+    cut_train_test_set_one_out(All_ratings)
     #analysis(All_ratings)
