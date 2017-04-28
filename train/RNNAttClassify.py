@@ -28,7 +28,7 @@ def RNN_Att_Classify(maxlen, Attlen, inputDim, outputDim, hiddenDim = 512):
     Att_input = TimeDistributed(Dense(hiddenDim, activation = 'tanh'), name = 'Att_input')(Att_input_start)
  
     RNN_out = LSTM(hiddenDim, return_sequences = False, name = 'RNN')(RNN_input)
-    RNN_out = Dropout(0.1, name = 'Dropout')(RNN_out)
+    RNN_out = Dropout(0.2, name = 'Dropout')(RNN_out)
     # get alpha, then calculate the Attention vector
     RNN_outs = RepeatVector(Attlen, name = 'RNN_outs')(RNN_out)
     merged = merge([Att_input, RNN_outs], name = 'merge1', mode = 'concat') 
