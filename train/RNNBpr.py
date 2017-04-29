@@ -36,7 +36,7 @@ def RNN_bpr(maxlen, inputDim, BPRlen = sample_num + 1, hiddenDim = 512):
     RNN_input = Input(shape=(maxlen, inputDim), dtype = 'float32', name = 'RNN_input')
     RNN_out = LSTM(hiddenDim, return_sequences = False, name = 'RNN')(RNN_input)
     RNN_out = Dropout(0.2, name = 'Dropout')(RNN_out)
-    RNN_out = Dense(inputDim, activation = 'relu')(RNN_out)
+    RNN_out = Dense(inputDim, activation = 'relu', name = "Dense")(RNN_out)
     
     BPR_input = Input(shape=(BPRlen, inputDim), dtype = 'float32', name = 'BPR_input')
     
@@ -48,7 +48,7 @@ def RNN_bpr(maxlen, inputDim, BPRlen = sample_num + 1, hiddenDim = 512):
     #print output.get_value().shape
     model = Model(inputs = [RNN_input, BPR_input], outputs = output)
     model.compile(loss = 'categorical_crossentropy', optimizer = 'rmsprop', metrics = ['accuracy'])
-    return model
+    return model#, RNN_out
 
 def neg_sample(seq, items_value, sample_num = 10):
     All_items = items_value.keys()
@@ -112,11 +112,6 @@ def runModelBPR(model, sequences, maxlen, items_value, FeaLength, batch_num = 20
         # for every batch sequences, we train and update the model
         if trainX.shape[0] > 0:
             error = model.train_on_batch([trainX, trainY], train_label)
-
-def getRNNOuput(model, layer, X_batch):
-    getRNNOuput = theano.function([model.layers[0].input], model.layers[layer].get_output(train=False), allow_input_downcast=True)
-    activations = getRNNOuput(X_batch) # same result as above
-    return activations
             
 def saveModel(getRNNOuput, sequences, maxlen, item_value, FeaLength):
     if len(sys.argv) > 3:
@@ -125,8 +120,13 @@ def saveModel(getRNNOuput, sequences, maxlen, item_value, FeaLength):
         save_file = "userCurrentEmbedding.txt" + str(time.time())
     f = open(save_file, 'a')
     # for every sequence we just need the final maxlen data, so we set Y as final item, default value
-    ValidX, _, _ = data_generator(sequences, maxlen, items_value, FeaLength)
-    output = getRNNOuput([ValidX], 0)
+    sequences_FinalMaxlen = []
+    for seq in sequences:
+        sequences_FinalMaxlen.append(seq[-maxlen : ] + [seq[-1]])
+    #validX, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
+    ValidX, _, _ = data_generator(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
+    print ValidX.shape
+    output = getRNNOuput([ValidX, 0])
 
     # save the output array into file
     for i in range(output.shape[0]):
@@ -141,7 +141,10 @@ def saveModelByBatch(model, sequences, maxlen, item_value, FeaLength):
     batch_size = int(round(1.0 * len(sequences) / batch_num))
     ## want to get RNN result
     #getRNNOuput = theano.function([model.layers['RNN_input'].input], model.layers[layer].get_output(train=False), allow_input_downcast=True)
-    getRNNOuput = K.function([model.layers['RNN_input'].input, K.learning_phase()], [model.layers['RNN_out'].output])
+    #print "get start"
+    getRNNOuput = K.function([model.layers[0].input, K.learning_phase()], model.layers[4].output)
+    #getRNNOuput = K.function([model.layers[0].input, K.learning_phase()], model.layers[2].output)
+    #print "get over"
     for i in range(batch_num): #for the batch of the sequences
         if i == (batch_num - 1):
             sequences_batch = sequences[i*batch_size : ]
@@ -163,9 +166,9 @@ if __name__ == "__main__":
     inputDim = FeaLength #trainX.shape[2]
     print "the input dimension is", inputDim
     model = RNN_bpr(maxlen, inputDim)
-    
+    print model.layers    
     #run the model
-    for epoch in range(3):
+    for epoch in range(10):
         runModelBPR(model, sequences, maxlen, items_value, FeaLength)
         #saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
 	print "the iter", epoch, " is over, now it is ", time.strftime("%Y-%m-%d %X",time.localtime())
