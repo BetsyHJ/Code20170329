@@ -92,8 +92,8 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
     right_num = 0
     trueNum = len(trueResult)
     count = 0
-    print "the rank is ", total_pro
-    print "the truth is ", trueResult
+    #print "the rank is ", total_pro
+    #print "the truth is ", trueResult
     #print "the candidate is ", candidateResult
     for j in rankedItem:
         if count == num[0]:
@@ -107,8 +107,10 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
                 MRR += 1.0 / count
     if right_num != 0:
         MAP /= right_num
-    print P, R, MAP, MRR
-    return P, R, MAP, MRR 
+    #print P, R, MAP, MRR
+    HR = getHitRatio(rankedItem, trueResult)
+    NDCG = getNDCG(rankedItem, trueResult)
+    return P, R, MAP, MRR, HR, NDCG
         
 def evaluate_classify(trueResult, candidateResult, UsersVector):
     ## ItemsVector is useless.
@@ -170,7 +172,7 @@ if __name__ == "__main__":
     for u in UserItems:
         trueResult = UserItems[u]
         candidateResult = candidates[u]
-        #t_P, t_R, t_MAP, t_MRR = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
+        #t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG  = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
 	t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG = evaluate_classify(trueResult, candidateResult, UsersVector[u])
         P += t_P; R += t_R; MAP += t_MAP; MRR += t_MRR; HR += t_HR; NDCG += t_NDCG;
 	#break

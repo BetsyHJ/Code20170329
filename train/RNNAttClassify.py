@@ -17,7 +17,7 @@ from numpy import random
 import re, sys, os
 from read_data import get_vector
 from RNNForRS import *
-
+Attlen, AttDis = 5, 5
 def get_R(X):
     Y, alpha = X[0], X[1]
     ans = K.T.batched_dot(Y, alpha)
@@ -88,6 +88,41 @@ def data_generator(sequences, maxlen, item_value, FeaLength, items_count, sample
         print "trainY is", str(trainY[i])
     '''
     return trainX, trainY
+
+def data_Att_generator(sequences, maxlen, item_value, FeaLength, items_count): #Attlen is the length which we see, and AttDis is the distance between time t (Now) and the Attention end time.
+    trainX = []
+    trainAtt = []
+    trainY = []
+    item_size = items_count # because the movie index starts from 1 
+    for seq in sequences: # for each sequences
+        seqLength = len(seq)
+	if seqLength > 200:
+	    continue
+        #translate the item into vector
+        seq_vector = []
+        for item in seq:
+            seq_vector.append(item_value[item])
+        # using sliding window to get train data    
+        for index in range(seqLength):
+            AttStart = index + maxlen - (Attlen + AttDis)
+            if index + maxlen >= seqLength:
+                break
+            if AttStart < 0:
+                continue
+            else:
+                trainX.append(seq_vector[index : (index + maxlen)])
+                trainAtt.append(seq_vector[AttStart : (AttStart + Attlen)])
+                #trainY.append(one_hot(seq[(index + maxlen):], item_size)) ## m2m
+	        trainY.append(one_hot([seq[index + maxlen]], item_size))  ## o2o
+    #print "the number of training samples is :", len(trainY)
+    #print "trainX is", trainX
+    #print len(trainY), maxlen, FeaLength
+    trainX = np.array(trainX, dtype = 'float32').reshape(len(trainY), maxlen, FeaLength)
+    trainAtt = np.array(trainAtt, dtype = 'float32').reshape(len(trainY), Attlen, FeaLength)
+    trainY = np.array(trainY, dtype = 'float32')#.reshape(len(trainY), 1, FeaLength)
+    #print "trainX is ", trainX
+    return trainX, trainAtt, trainY
+
 def read_item_fromAll(filename):
     FeaLength, ALL_value = proPrepare(itemFeatureFile)
     items_value = {}
@@ -96,7 +131,7 @@ def read_item_fromAll(filename):
 	    items_value[item] = ALL_value[item]
     return FeaLength, items_value
 
-def saveModel(model, sequences, maxlen, item_value, FeaLength):
+def saveModel(model, sequences, maxlen, item_value, FeaLength, items_count):
     if len(sys.argv) > 3:
         save_file = sys.argv[3]
     else:
@@ -104,11 +139,13 @@ def saveModel(model, sequences, maxlen, item_value, FeaLength):
     f = open(save_file, 'a')
 
     # for every sequence we just need the final maxlen data, so we set Y as final item, default value
-    sequences_FinalMaxlen = []
+    sequences_Final = []
+    length_control = max(maxlen, AttDis + Attlen)
     for seq in sequences:
-        sequences_FinalMaxlen.append(seq[-maxlen : ] + [seq[-1]])
-    validX, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
-    output = model.predict([validX, validX], batch_size = 32)
+        sequences_Final.append(seq[-length_control : ] + [seq[-1]])
+    #validX, validAtt, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
+    validX, validAtt, _ = data_Att_generator(sequences_Final, maxlen, item_value, FeaLength, items_count)
+    output = model.predict([validX, validAtt], batch_size = 32)
 
     # save the output array into file
     for i in range(output.shape[0]):
@@ -118,7 +155,7 @@ def saveModel(model, sequences, maxlen, item_value, FeaLength):
     f.close()
     #print output
 
-def saveModelByBatch(model, sequences, maxlen, item_value, FeaLength):
+def saveModelByBatch(model, sequences, maxlen, item_value, FeaLength, items_count):
     batch_num = 100
     batch_size = int(round(1.0 * len(sequences) / batch_num))
     for i in range(batch_num): #for the batch of the sequences
@@ -126,7 +163,7 @@ def saveModelByBatch(model, sequences, maxlen, item_value, FeaLength):
             sequences_batch = sequences[i*batch_size : ]
         else:
             sequences_batch = sequences[i*batch_size : ((i + 1) * batch_size)]
-        saveModel(model, sequences_batch, maxlen, item_value, FeaLength)
+        saveModel(model, sequences_batch, maxlen, item_value, FeaLength, items_count)
 
 if __name__ == "__main__":
 
@@ -162,17 +199,18 @@ if __name__ == "__main__":
                 sequences_batch = sequences[i*batch_size : ]
             else:
                 sequences_batch = sequences[i*batch_size : ((i + 1) * batch_size)]
-            trainX, trainY = data_generator(sequences_batch, maxlen, items_value, FeaLength, items_count)
+            #trainX, trainY = data_generator(sequences_batch, maxlen, items_value, FeaLength, items_count)
+            trainX, trainAtt, trainY = data_Att_generator(sequences_batch, maxlen, items_value, FeaLength, items_count)
 	    #break
-	    print trainX.shape, trainY.shape
+	    print trainX.shape, trainAtt.shape, trainY.shape
             # for every batch sequences, we train and update the model
 	    if trainX.shape[0] > 0:
-    	        error = model.train_on_batch([trainX, trainX], trainY)
+    	        error = model.train_on_batch([trainX, trainAtt], trainY)
 	print error
     # evaluate the model
     #scores = model.evaluate(trainX, trainY, show_accuracy=True)
     #print scores
 
     #save the output of the input
-    saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
+    saveModelByBatch(model, sequences, maxlen, items_value, FeaLength, items_count)
 
