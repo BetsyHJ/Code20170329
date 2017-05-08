@@ -22,7 +22,7 @@ python RNNForRS.py ../data/testModelFeature.txt ../data/testModelRecord2.py Outp
     <tr> <td>Attention_Classify</td><td>0.565397350993</td><td>0.376347868393</td> </tr>
     </table>
 </div> 
-#### Neural Collaboration Filtering
+- Neural Collaboration Filtering
 <div>
     <table border="0">
     <tr> <th>Model</th><th>HR@10</th><th>NDCG@10</th> </tr>
