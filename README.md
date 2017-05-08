@@ -18,6 +18,7 @@ python RNNForRS.py ../data/testModelFeature.txt ../data/testModelRecord2.py Outp
     <tr> <td>BPR</td><td>0.621523178808</td><td>0.331396795235</td> </tr>
     <tr> <td>RNN_Classify</td><td>0.703145695364</td><td>0.478569321339</td> </tr>
     <tr> <td>RNN_Bpr</td><td>0.715397350993</td><td>0.456694164071</td> </tr>
-    <tr> <td>RNNAttention_Classify</td><td>0.690231788079</td><td>0.467780340950</td> </tr>
+    <tr> <td>RNNAttention_Classify</td><td>0.702649006623</td><td>0.477714585082</td> </tr>
+    <tr> <td>Attention_Classify</td><td>0.565397350993</td><td>0.376347868393</td> </tr>
     </table>
 </div>
