@@ -169,13 +169,17 @@ if __name__ == "__main__":
 
     # evaluate
     P = 0; R = 0; MAP = 0; MRR = 0; HR = 0; NDCG = 0;
+    number = 0
     for u in UserItems:
+	if u not in UsersVector:
+	    continue
         trueResult = UserItems[u]
         candidateResult = candidates[u]
         #t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG  = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
 	t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG = evaluate_classify(trueResult, candidateResult, UsersVector[u])
         P += t_P; R += t_R; MAP += t_MAP; MRR += t_MRR; HR += t_HR; NDCG += t_NDCG;
 	#break
-    number = len(UserItems)
+	number += 1
+    #number = len(UserItems)
     P /= number; R /= number; MAP /= number; MRR /= number; HR = 1.0 * HR / number; NDCG /= number;
     print P, R, MAP, MRR, HR, NDCG

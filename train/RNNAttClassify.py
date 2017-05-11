@@ -17,7 +17,7 @@ from numpy import random
 import re, sys, os
 from read_data import get_vector
 from RNNForRS import *
-Attlen, AttDis = 5, 5
+Attlen, AttDis = 10, 20
 def get_R(X):
     Y, alpha = X[0], X[1]
     ans = K.T.batched_dot(Y, alpha)
@@ -40,7 +40,9 @@ def RNN_Att_Classify(maxlen, Attlen, inputDim, outputDim, hiddenDim = 512):
     #r = Reshape((hiddenDim), name = 'r1')
     ##AttDense = Dense(hiddenDim, activation = 'tanh')(r)
     # use the attention result merged with rnn out to classify
+
     merged = merge([r, RNN_out], mode = 'concat')
+    ##merged = r
     h_ = Activation('tanh')(merged)
     output = Dense(outputDim, activation = 'softmax')(h_)
     
@@ -108,12 +110,55 @@ def data_Att_generator(sequences, maxlen, item_value, FeaLength, items_count): #
             if index + maxlen >= seqLength:
                 break
             if AttStart < 0:
-                continue
+		t = index + maxlen - Attlen 
+		if t >= 0:
+		    trainX.append(seq_vector[index : (index + maxlen)])
+		    trainAtt.append(seq_vector[t : (t + Attlen)])
+		    trainY.append(one_hot([seq[index + maxlen]], item_size))
+                #continue
             else:
                 trainX.append(seq_vector[index : (index + maxlen)])
                 trainAtt.append(seq_vector[AttStart : (AttStart + Attlen)])
                 #trainY.append(one_hot(seq[(index + maxlen):], item_size)) ## m2m
 	        trainY.append(one_hot([seq[index + maxlen]], item_size))  ## o2o
+    #print "the number of training samples is :", len(trainY)
+    #print "trainX is", trainX
+    #print len(trainY), maxlen, FeaLength
+    trainX = np.array(trainX, dtype = 'float32').reshape(len(trainY), maxlen, FeaLength)
+    trainAtt = np.array(trainAtt, dtype = 'float32').reshape(len(trainY), Attlen, FeaLength)
+    trainY = np.array(trainY, dtype = 'float32')#.reshape(len(trainY), 1, FeaLength)
+    #print "trainX is ", trainX
+    return trainX, trainAtt, trainY
+
+def data_Att_generator_save(sequences, maxlen, item_value, FeaLength, items_count): #Attlen is the length which we see, and AttDis is the distance between time t (Now) and the Attention end time.
+    trainX = []
+    trainAtt = []
+    trainY = []
+    item_size = items_count # because the movie index starts from 1
+    for seq in sequences: # for each sequences
+        seqLength = len(seq)
+        if seqLength > 200:
+            continue
+        #translate the item into vector
+        seq_vector = []
+        for item in seq:
+            seq_vector.append(item_value[item])
+        # using sliding window to get train data
+        index = seqLength - maxlen -1
+	if index > 0:
+            AttStart = index + maxlen - (Attlen + AttDis)
+            if AttStart < 0:
+                t = index + maxlen - Attlen
+                if t >= 0:
+                    trainX.append(seq_vector[index : (index + maxlen)])
+                    trainAtt.append(seq_vector[t : (t + Attlen)])
+                    trainY.append(one_hot([seq[index + maxlen]], item_size))
+                #continue
+            else:
+                trainX.append(seq_vector[index : (index + maxlen)])
+                trainAtt.append(seq_vector[AttStart : (AttStart + Attlen)])
+                #trainY.append(one_hot(seq[(index + maxlen):], item_size)) ## m2m
+                trainY.append(one_hot([seq[index + maxlen]], item_size))  ## o2o
     #print "the number of training samples is :", len(trainY)
     #print "trainX is", trainX
     #print len(trainY), maxlen, FeaLength
@@ -144,7 +189,7 @@ def saveModel(model, sequences, maxlen, item_value, FeaLength, items_count):
     for seq in sequences:
         sequences_Final.append(seq[-length_control : ] + [seq[-1]])
     #validX, validAtt, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
-    validX, validAtt, _ = data_Att_generator(sequences_Final, maxlen, item_value, FeaLength, items_count)
+    validX, validAtt, _ = data_Att_generator_save(sequences_Final, maxlen, item_value, FeaLength, items_count)
     output = model.predict([validX, validAtt], batch_size = 32)
 
     # save the output array into file
@@ -188,7 +233,7 @@ if __name__ == "__main__":
     items_count, outputDim = 3952, 3952
     inputDim = FeaLength #trainX.shape[2]
     print "the input dimension is", inputDim
-    model = RNN_Att_Classify(maxlen, maxlen, inputDim, outputDim)
+    model = RNN_Att_Classify(maxlen, Attlen, inputDim, outputDim)
     # run the model
     ## model.fit(trainX, trainY, epochs = 100, batch_size = 8)
     ## the data is big, so we have to use batch to deal data

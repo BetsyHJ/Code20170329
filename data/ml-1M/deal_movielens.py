@@ -66,6 +66,18 @@ def PrintSequence(All_ratings, filename):
 	fp.write("\n")
     fp.close()
 
+def PrintWord2vec(All_ratings, filename):
+    fp = open(filename, 'w')
+    for user in All_ratings:
+        items, scores = All_ratings[user][0], All_ratings[user][1]
+        #fp.write(user)
+        for i in range(len(items)):
+            if scores[i] < 3:
+                break
+            fp.write(items[i] + " ")
+        fp.write("\n")
+    fp.close()
+
 def generate_testNega(All_ratings, test_ratings, train_ratings, nega_num = 50):
     # get all items
     fp = open("test_nega.txt", 'w')
@@ -115,7 +127,7 @@ def cut_train_test_set(All_ratings, ratio): #ratio is float
     #PrintLINE(test_ratings, sys.argv[1] + "test" + str(ratio) + "_LINE")
     #PrintSequence(test_ratings, sys.argv[1] + "_test" + str(ratio))
     #PrintBPR(train_ratings, sys.argv[1] + "train" + str(ratio) + "_BPR")
-    generate_testNega(All_ratings, test_ratings, train_ratings)
+    #generate_testNega(All_ratings, test_ratings, train_ratings)
 def cut_train_test_set_one_out(All_ratings): 
     train_ratings, test_ratings = {}, {}
     for user in All_ratings:
@@ -129,8 +141,9 @@ def cut_train_test_set_one_out(All_ratings):
     #PrintLINE(test_ratings, sys.argv[1] + "test" + str(ratio) + "_LINE")
     #PrintSequence(test_ratings, sys.argv[1] + "_test.oneout")
     #PrintSequence(train_ratings, sys.argv[1] + "_train.oneout")
+    PrintWord2vec(train_ratings, sys.argv[1] + "_train_w2v.oneout")
     #PrintBPR(train_ratings, sys.argv[1] + "train_BPR.oneout")
-    generate_testNega(All_ratings, test_ratings, train_ratings, 99) #nega_num = 100
+    #generate_testNega(All_ratings, test_ratings, train_ratings, 99) #nega_num = 100
 
 def analysis(ratings):
     count = 0
