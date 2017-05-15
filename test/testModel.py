@@ -175,8 +175,8 @@ if __name__ == "__main__":
 	    continue
         trueResult = UserItems[u]
         candidateResult = candidates[u]
-        #t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG  = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
-	t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG = evaluate_classify(trueResult, candidateResult, UsersVector[u])
+        t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG  = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
+	#t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG = evaluate_classify(trueResult, candidateResult, UsersVector[u])
         P += t_P; R += t_R; MAP += t_MAP; MRR += t_MRR; HR += t_HR; NDCG += t_NDCG;
 	#break
 	number += 1

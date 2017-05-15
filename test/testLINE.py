@@ -91,9 +91,9 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
     right_num = 0
     trueNum = len(trueResult)
     count = 0
-    print "the rank is ", total_pro
-    print "the truth is ", trueResult
-    print "the candidate is ", candidateResult
+    #print "the rank is ", total_pro
+    #print "the truth is ", trueResult
+    #print "the candidate is ", candidateResult
     for j in rankedItem:
         if count == num[0]:
             P += 1.0 * right_num / count
@@ -106,7 +106,7 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
                 MRR += 1.0 / count
     if right_num != 0:
         MAP /= right_num
-    print P, R, MAP, MRR
+    #print P, R, MAP, MRR
     HR = getHitRatio(rankedItem, trueResult)
     NDCG = getNDCG(rankedItem, trueResult)
     return P, R, MAP, MRR, HR, NDCG
