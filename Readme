@@ -15,3 +15,16 @@
 3836::Kelly's Heroes (1970)::Action|Comedy|War
 
 %%这个用户基本上后期都在看war类型的电影
+
+
+%% 三元组信息：[cosine, sim_mid, distance]
+[[0.024548879, 'm1097', 3], [0.025246795, 'm1196', 2], [0.020120122, 'm110', 12], [0.033937126, 'm1097', 6], [0.028086103, 'm1196', 5], [0.035295654, 'm1097', 8], [0.033214416, 'm2529', 4], [0.028657619, 'm1270', 4], [0.029402686, 'm2529', 6], [0.018662797, 'm1374', 1], [0.030278616, 'm480', 4], [0.03709846, 'm480', 5], [0.026614768, 'm110', 22], [0.030505385, 'm2640', 3], [0.02225502, 'm1396', 16], [0.031025305, 'm480', 9]]
+%% 用户观看记录
+['m924', 'm1240', 'm2529', 'm1270', 'm1200', 'm2140', 'm480', 'm1199', 'm1374', 'm1127', 'm2640', 'm2628', 'm589', 'm2528', 'm32', 'm2657']
+
+924::2001: A Space Odyssey (1968)::Drama|Mystery|Sci-Fi|Thriller --> 1097::E.T. the Extra-Terrestrial (1982)::Children's|Drama|Fantasy|Sci-Fi
+1240::Terminator, The (1984)::Action|Sci-Fi|Thriller --> 1196::Star Wars: Episode V - The Empire Strikes Back (1980)::Action|Adventure|Drama|Sci-Fi|War
+2597::Lost & Found (1999)::Comedy|Romance --> 110::Braveheart (1995)::Action|Drama|War
+1270::Back to the Future (1985)::Comedy|Sci-Fi --> 1097::E.T. the Extra-Terrestrial (1982)::Children's|Drama|Fantasy|Sci-Fi
+1200::Aliens (1986)::Action|Sci-Fi|Thriller|War --> 1196::Star Wars: Episode V - The Empire Strikes Back (1980)::Action|Adventure|Drama|Sci-Fi|War
+2140::Dark Crystal, The (1982)::Children's|Fantasy|Sci-Fi --> 1097::E.T. the Extra-Terrestrial (1982)::Children's|Drama|Fantasy|Sci-Fi
