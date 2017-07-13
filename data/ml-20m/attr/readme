@@ -1,0 +1,32 @@
+film.film.starring film.performance.actor
+film.film.sequel
+film.film.prequel
+film.film.directed_by
+film.film.language
+award.award_nominated_work.award_nominations
+film.film.produced_by
+film.film.country
+film.film.film_festivals
+film.film.music
+film.film.executive_produced_by
+film.editor.film
+film.film.cinematography
+film.film.distributors
+film.film.personal_appearances
+award.award_winning_work.awards_won
+film.film.costume_design_by
+film.film.film_art_direction_by
+film.film.production_companies
+film.film.rating
+film.film.story_by
+film.film.film_production_design_by
+film.film.film_set_decoration_by
+film.film.soundtrack
+film.film.featured_film_locations
+media_common.adaptation.adapted_from
+film.film.film_format
+
+
+对每个电影选了以上27个关系，每一行表示一个电影，格式为电影的mid+"\t"+"film.film.starring film.performance.actor"+":"+关系对应的实体的mid(如果有多个就用，隔开，如果没有就为空)+"\t"+"film.film.sequel"+":"+...+"\n"
+在知识图谱中每个实体都对应一个mid
+

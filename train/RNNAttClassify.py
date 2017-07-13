@@ -17,7 +17,7 @@ from numpy import random
 import re, sys, os
 from read_data import get_vector
 from RNNForRS import *
-Attlen, AttDis = 10, 20
+Attlen, AttDis = 15, 20
 def get_R(X):
     Y, alpha = X[0], X[1]
     ans = K.T.batched_dot(Y, alpha)
@@ -230,7 +230,12 @@ if __name__ == "__main__":
     # trainX, trainY = createData(sequences, maxlen, items_value, FeaLength)
 
     # define the model
-    items_count, outputDim = 3952, 3952
+
+    ## for movielens
+    #items_count, outputDim = 3952, 3952
+    ## for jd data
+    items_count, outputDim = 164708, 164708
+
     inputDim = FeaLength #trainX.shape[2]
     print "the input dimension is", inputDim
     model = RNN_Att_Classify(maxlen, Attlen, inputDim, outputDim)

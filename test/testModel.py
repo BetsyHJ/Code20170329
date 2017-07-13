@@ -75,6 +75,7 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
     total_pro = {}
     for i in candidateResult:
         if i not in ItemsVector:
+	    print "no item", i
             continue
         item = ItemsVector[i]
 	#print item
