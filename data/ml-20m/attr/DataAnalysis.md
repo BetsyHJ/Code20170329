@@ -9,4 +9,6 @@
 ### user2
 ![image](https://github.com/BetsyHJ/Code20170329/blob/develop/data/ml-20m/attr/User2AttMC.JPG)
 
-
+## 统计属性的次数（if movie1 --attributei-> movie2, then vi add 1）
+实际上，电影的语言、国家这样的属性太过宽泛，信息量不够；而actor、prequel这类属性的更有意义。
+![image](https://github.com/BetsyHJ/Code20170329/blob/develop/data/ml-20m/attr/att_count.JPG)
