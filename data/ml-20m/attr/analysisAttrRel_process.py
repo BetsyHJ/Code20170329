@@ -70,7 +70,53 @@ def compare_atts(atts1, atts2):
                 sim_attid.append(i)
                 break
     return sim_attid    
-    
+   
+def findAttNumber(rating, movie_atts, pid = ""):
+    #global Att_Matrix
+    Att_count = np.zeros(27)
+    for user in rating:
+        items = rating[user]
+        pre_att, pre_sim_attid = [], []
+        for i in items:
+            if i not in movie_atts:
+                continue
+            if len(pre_att) == 0:
+                pre_att = movie_atts[i]
+            else:
+                cur_att = movie_atts[i]
+                cur_sim_attid = compare_atts(pre_att, cur_att)
+                ## movie_att --p-> movie_att, count p number
+	        for k in cur_sim_attid:
+		    Att_count[k] += 1
+    fp = open("att_count"+str(pid)+".csv", 'w')
+    for i in range(Att_count.shape[0]):
+        fp.write(str(int(Att_count[i])) + " ")
+    #fp.write("\n")
+    fp.close()
+
+def findAttNumberInternal(rating, movie_atts, pid = "", internalNum = 5):
+    #global Att_Matrix
+    Att_count = np.zeros(27)
+    for user in rating:
+        items = rating[user]
+        record_att = []
+        for i in items:
+            if i not in movie_atts:
+                continue
+            if len(record_att) < 1 + internalNum:
+                cur_att = movie_atts[i]
+                record_att.append(cur_att)
+            else:
+                cur_sim_attid = compare_atts(record_att[0], record_att[-1])
+                ## movie_att --p-> movie_att, count p number
+	        for k in cur_sim_attid:
+		    Att_count[k] += 1
+    fp = open("att_count"+str(pid)+".csv", 'w')
+    for i in range(Att_count.shape[0]):
+        fp.write(str(int(Att_count[i])) + " ")
+    #fp.write("\n")
+    fp.close()
+ 
 #Att_Matrix = np.zeros((27, 27))    
 def findAttRelation(rating, movie_atts, pid = ""):
     global Att_Matrix
@@ -97,10 +143,11 @@ def findAttRelation(rating, movie_atts, pid = ""):
 		    #print pre_sim_attid, cur_sim_attid
 		    pre_sim_attid = cur_sim_attid
 		pre_att = cur_att
-    with lock:
-        Att_Matrix += Att_Matrix_temp
+    #with lock:
+    #    Att_Matrix += Att_Matrix_temp
     saveMatrix(Att_Matrix_temp, "save"+str(pid)+".csv")
-    saveMatrix(Att_Matrix_temp, "save"+str(pid)+"_normal.csv")
+    Att_Matrix_normal = getNormalMatrix(Att_Matrix_temp)
+    saveMatrix_normal(Att_Matrix_normal, "save"+str(pid)+"_normal.csv")
     '''
     data = pd.DataFrame(Att_Matrix_temp)
     data.to_csv("save"+str(pid)+".csv")
@@ -114,6 +161,33 @@ def findAttRelation(rating, movie_atts, pid = ""):
     #print Att_Matrix
     #Att_Matrix += Att_Matrix_temp
     print "chile process over~"
+
+def findAttRelationInternal(rating, movie_atts, pid = "", internalNum = 3):
+    Att_Matrix_temp = np.zeros((27, 27))
+    for user in rating:
+        items = rating[user]
+        pre_att, pre_sim_attid = [], []
+        record_att = []
+        for i in items:
+            if i not in movie_atts:
+                continue
+            if len(record_att) < 2 + internalNum:
+                cur_att = movie_atts[i]
+                record_att.append(cur_att)
+            else:
+                pre_sim_attid = compare_atts(record_att[0], record_att[internalNum])
+                cur_sim_attid = compare_atts(record_att[1], record_att[internalNum+1])
+                for pi in pre_sim_attid:
+                    for pj in cur_sim_attid:
+                        Att_Matrix_temp[pj][pi] += 1.0
+                # sliding window
+                cur_att = movie_atts[i]
+                record_att = record_att[1:]
+                record_att.append(cur_att)
+    saveMatrix(Att_Matrix_temp, "save"+str(pid)+".csv")
+    Att_Matrix_normal = getNormalMatrix(Att_Matrix_temp)
+    saveMatrix_normal(Att_Matrix_normal, "save"+str(pid)+"_normal.csv")
+    print "chile process over~"
                 
 def saveMatrix1(filename):
     global Att_Matrix
@@ -121,7 +195,7 @@ def saveMatrix1(filename):
     fp = open(filename, 'w')
     for i in range(l):
         for j in range(w):
-	    fp.write(str(int(Att_Matrix[i][j])) + "\t")
+	    fp.write(str(int(Att_Matrix[i][j])) + " ")
 	fp.write("\n")
     fp.close()
 def saveMatrix(Att_Matrix, filename):
@@ -130,7 +204,7 @@ def saveMatrix(Att_Matrix, filename):
     fp = open(filename, 'w')
     for i in range(l):
         for j in range(w):
-            fp.write(str(int(Att_Matrix[i][j])) + "\t")
+            fp.write(str(int(Att_Matrix[i][j])) + " ")
         fp.write("\n")
     fp.close()
 
@@ -140,9 +214,25 @@ def saveMatrix_normal(Att_Matrix, filename):
     fp = open(filename, 'w')
     for i in range(l):
         for j in range(w):
-            fp.write(str(("%.3f" % Att_Matrix[i][j])) + "\t")
+            fp.write(str(("%.3f" % Att_Matrix[i][j])) + " ")
         fp.write("\n")
     fp.close()
+def getNormalMatrix(Matrix):
+    column_sum = np.zeros(27)
+    for i in range(Matrix.shape[0]):
+        for j in range(Matrix.shape[1]):
+            column_sum[j] += Matrix[i][j]
+    Matrix_normal = np.zeros((27, 27))
+    for i in range(Matrix.shape[0]):
+        for j in range(Matrix.shape[1]):
+	    if column_sum[j] > 0:
+                Matrix_normal[i][j] = 1.0 * Matrix[i][j] / column_sum[j]
+	    else:
+		Matrix_normal[i][j] = 0
+    #saveMatrix_normal(Matrix_normal, "att_rel_normal.csv")
+    #with lock:
+    #    print column_sum, Matrix_normal
+    return Matrix_normal
 
 def readOneMatrix(filename):
     Matrix, count, column_sum = np.zeros((27, 27)), 0, np.zeros(27)
@@ -180,12 +270,13 @@ if __name__ == '__main__':
     name_movielensName = read_name2movielensName("movies_id.txt")
     movie_atts = read_movie_att('direc.txt',  name_movielensName)
     rating = readSequences_normal('../ratings.csv_seq')
-   
+    rating_keys = rating.keys()#[:10]
+
     #global Att_Matrix
     ## threading
-    thread_num = 10
-    thread_dataNum = len(rating) / thread_num
-    rating_keys = rating.keys()[:10]
+    thread_num = 1
+    thread_dataNum = len(rating_keys) / thread_num
+    #rating_keys = rating.keys()[1]
     threads = []
     #ct = CustomTask()
     for i in range(thread_num):
@@ -194,7 +285,8 @@ if __name__ == '__main__':
             thread_rating = {}
             for r in rating_keys[i*thread_dataNum : ]:
                 thread_rating[r] = rating[r]
-            t = multiprocessing.Process(target=findAttRelation, args=(thread_rating, movie_atts, i))
+            #t = multiprocessing.Process(target=findAttRelationInternal, args=(thread_rating, movie_atts, i))
+	    t = multiprocessing.Process(target=findAttNumberInternal, args=(thread_rating, movie_atts, i))
             t.Daemon = True
             t.start()
             
@@ -202,7 +294,8 @@ if __name__ == '__main__':
             thread_rating = {}
             for r in rating_keys[i*thread_dataNum : (i+1)*thread_dataNum]:
                 thread_rating[r] = rating[r]
-            t = multiprocessing.Process(target=findAttRelation, args=(thread_rating, movie_atts, i))
+            #t = multiprocessing.Process(target=findAttRelationInternal, args=(thread_rating, movie_atts, i))
+	    t = multiprocessing.Process(target=findAttNumberInternal, args=(thread_rating, movie_atts, i))
             t.Daemon = True
             t.start()
         threads.append(t)
