@@ -58,7 +58,7 @@ def getHitRatio(ranklist, gtItem, control = 10):
         if count >= control:
             break
     return 0
-def getNDCG(ranklist, gtItem, control = 10):
+def getNDCG1(ranklist, gtItem, control = 10):
     count = 0
     for i in xrange(len(ranklist)):
         item = ranklist[i]
@@ -68,6 +68,25 @@ def getNDCG(ranklist, gtItem, control = 10):
         if count >= control:
             break
     return 0
+def getNDCG(ranklist, trueResult, num=10):
+    ranklabel = []
+    for i in ranklist:
+        if i in trueResult:
+            ranklabel.append(1)
+        else:
+            ranklabel.append(0)
+    DCG=0.0
+    for k,i in enumerate(ranklist[:num]):
+        DCG+=(pow(2,ranklabel[k])-1)/np.log2(1+k+1)
+    IDCG=0.0
+    rank_pair=zip(ranklist,ranklabel)
+    rank_pair=sorted(rank_pair,key=lambda s:s[1],reverse=True)
+    for k,i in enumerate(rank_pair[:num]):
+        IDCG+=(pow(2,i[1])-1)/np.log2(1+k+1)
+    if IDCG==0.0:
+        return 0
+    else:
+        return DCG/IDCG
 
 def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
     P = 0; R = 0; MAP = 0; MRR = 0;
@@ -75,10 +94,12 @@ def evaluate(trueResult, candidateResult, UsersVector, ItemsVector):
     total_pro = {}
     for i in candidateResult:
         if i not in ItemsVector:
+	    print "no item", i
             continue
         item = ItemsVector[i]
 	#print item
 	score = np.dot(item, UsersVector)
+	#score = np.dot(item, UsersVector) / np.sqrt(np.dot(item, item) * np.dot(UsersVector, UsersVector))
         #score = -1.0 * (np.dot(item, np.log(UsersVector)) + np.dot((1.0 - item), np.log(1.0 - UsersVector)))
 	#score = np.linalg.norm(UsersVector - item)  
         total_pro[i] = score
@@ -136,8 +157,12 @@ if __name__ == "__main__":
     P = 0; R = 0; MAP = 0; MRR = 0; HR = 0; NDCG = 0;
     for u in UserItems:
         trueResult = UserItems[u]
+	## if we want to test the first item in the trueResult
+	trueResult = trueResult#[0:1]
+
         candidateResult = candidates[u]
         t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)
+	#print t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG
         P += t_P; R += t_R; MAP += t_MAP; MRR += t_MRR; HR += t_HR; NDCG += t_NDCG;
 	#break
     number = len(UserItems)

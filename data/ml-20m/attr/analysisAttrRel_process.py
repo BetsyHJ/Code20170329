@@ -116,6 +116,31 @@ def findAttNumberInternal(rating, movie_atts, pid = "", internalNum = 5):
         fp.write(str(int(Att_count[i])) + " ")
     #fp.write("\n")
     fp.close()
+
+def findFeature(rating, movie_atts, pid = "", internalNum = 0):
+    #global Att_Matrix
+    Path = []
+    for user in rating:
+        items = rating[user]
+        record_att = []
+        for i in items:
+            if i not in movie_atts:
+                continue
+            if len(record_att) < 2 + internalNum:
+                cur_att = movie_atts[i]
+                record_att.append(cur_att)
+            else:
+                cur_sim_attid = compare_atts(record_att[-2], record_att[-1])
+                ## movie_att --p-> movie_att, count p number
+                for k in cur_sim_attid:
+                    t = "u"+user + " " + "f"+k +" " + "m"+i + "\n"
+		    Path.append(t)
+    fp = open("UFMPath"+str(pid)+".txt", 'w')
+    for i in range(len(Path)):
+        fp.write(Path[i])
+    #fp.write("\n")
+    fp.close()
+
  
 #Att_Matrix = np.zeros((27, 27))    
 def findAttRelation(rating, movie_atts, pid = ""):
@@ -271,7 +296,7 @@ if __name__ == '__main__':
     movie_atts = read_movie_att('direc.txt',  name_movielensName)
     rating = readSequences_normal('../ratings.csv_seq')
     rating_keys = rating.keys()#[:10]
-
+    '''
     #global Att_Matrix
     ## threading
     thread_num = 1
@@ -301,9 +326,10 @@ if __name__ == '__main__':
         threads.append(t)
     for t in threads:
         t.join()
+    '''
     #print Att_Matrix
     #findAttRelation(rating, movie_atts)
-    
+    findFeature(rating, movie_atts)
     # merge the result from each batch
     #readMatrix()
 

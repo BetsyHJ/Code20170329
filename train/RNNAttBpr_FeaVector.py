@@ -33,7 +33,7 @@ def RNN_Att_bpr(maxlen, Attlen, inputDim, AttDim, outputDim, BPRlen = sample_num
     RNN_out = Dropout(0.2, name = 'Dropout')(RNN_out)
     # get alpha, then calculate the Attention vector
     RNN_outs = RepeatVector(Attlen, name = 'RNN_outs')(RNN_out)
-    merged = merge([Att_input, RNN_outs], name = 'merge1', mode = 'dot') 
+    merged = merge([Att_input, RNN_outs], name = 'merge1', mode = 'concat') 
     ##distributed = TimeDistributed(Dense(1, activation = 'tanh'), name = 'distributed1')(merged)
     ##flat_alpha = Flatten(name = "flat_alpha")(distributed)
     flat_alpha = Flatten(name = "flat_alpha")(merged)
@@ -132,7 +132,13 @@ def saveModel(getRNNOuput, sequences, maxlen, Attlen, item_value, FeaLength, Att
 	for s in seq:
 	    if s in item_value:
 		seq_New.append(s)
-        sequences_Final.append(seq_New[-length_control : ] + [seq_New[-1]])
+	if len(seq_New) >= maxlen:
+            sequences_Final.append(seq_New[-maxlen : ] + [seq_New[-1]])
+        else:
+            seq_New = seq_New * maxlen * 2
+            print "seq is ", seq_New
+            sequences_Final.append(seq_New[-maxlen : ] + [seq_New[-1]])
+        #sequences_Final.append(seq_New[-length_control : ] + [seq_New[-1]])
     #print len(sequences_Final), len(sequences_Final[0])
     #validX, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
     #ValidX, _, _ = data_generator(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
@@ -192,6 +198,7 @@ if __name__ == "__main__":
     sequences = readSequences(sequencesFile)
     # read Knowledge Graph Feature Vector
     FeatureVector = readFeatureVector("../data/ml-20m/TransE/AttFeatureVector1.txt")
+    #FeatureVector = readFeatureVector("../data/MUSIC/TransE/AttFeatureVector1.txt")
     Attlen = len(FeatureVector)
     AttDim = FeatureVector[0].shape[0]
     

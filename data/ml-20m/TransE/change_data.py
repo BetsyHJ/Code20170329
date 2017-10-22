@@ -15,8 +15,8 @@ def read_KBid2ml(filename):
     KBid2ml = {}
     for line in f.readlines():
         names = line.split(" ")
-        name1, name2 = names[0], names[1].strip()[3:]
-        print name1, name2
+        name1, name2 = names[0], "m." + names[1].strip()[3:]
+        #print name1, name2
         KBid2ml[name2] = name1
     f.close()
     return KBid2ml
@@ -25,7 +25,7 @@ def read_index2KBid(filename):
     index2KBid = {}
     for line in f.readlines():
         names = line.split("\t")
-        name1, name2 = names[0].strip()[2:], int(names[1].strip())# entity id : index
+        name1, name2 = names[0].strip(), int(names[1].strip())# entity id : index
         ### print name1, name2
         index2KBid[name2] = name1
 	#print name2, name1
@@ -47,7 +47,24 @@ def readVector(filename, index2KBid, KBid2ml):
     f.close()
     fp.close()
     return ml_vectors
-        
+       
+def readVector2(filename, index2KBid):
+    ml_vectors = {}
+    f = open(filename)
+    fp = open("data.out", 'w')
+    index = 0
+    for line in f.readlines():
+        #print index, index2KBid[index]
+        if True:
+            s = line.split("\t")
+            ml_vectors[index2KBid[index]] = " ".join(s)
+            fp.write(index2KBid[index] + "\t" + " ".join(s))
+        index += 1
+    f.close()
+    fp.close()
+    return ml_vectors
+
+ 
 def vector_string2float(svector):
     svector = svector.split(" ")
     fvector = []
@@ -63,7 +80,27 @@ def vector_float2string(fvector):
         svector.append(str(fvector[i]))
     svector = " ".join(svector)
     return svector            
-    
+   
+def readFeature2(filename):
+    f = open(filename)
+    index =[190, 29, 196, 850, 83, 1118, 1102, 1287, 170, 1104, 724, 714, 869, 775, 279, 734, 546, 1091, 1196, 768, 691, 773, 735, 99, 68, 692]
+    lines = f.readlines()
+    # to get actor vector
+    t1 = " ".join(lines[574].strip().split("\t"))
+    t2 = " ".join(lines[325].strip().split("\t"))
+    actor_vector = vector_float2string(vector_string2float(t1) + vector_string2float(t2))
+    features = []
+    for i in index:
+	s = lines[i].strip().split("\t")
+	features.append(" ".join(s))
+    f.close()
+    fp = open("data.out", 'w')
+    fp.write("0\t"+actor_vector+"\n")
+    for i in range(len(features)):
+	fp.write(str(i+1) + "\t" + features[i]+ "\n")
+    fp.close()
+	
+ 
 def readFeatureVector(filename):
     ''' 
     index = [29, 121, 141, 102, 48, 69]
@@ -79,12 +116,12 @@ def readFeatureVector(filename):
         FeatureVector[index] = " ".join(s)
         index += 1
     f.close()
-    prequel_vector = FeatureVector[29]
-    sequel_vector = FeatureVector[121]
-    personal_appearances_vector = FeatureVector[141]
-    adapted_from_vector = FeatureVector[69]
+    prequel_vector = FeatureVector[30]
+    sequel_vector = FeatureVector[191]
+    personal_appearances_vector = FeatureVector[776]
+    adapted_from_vector = FeatureVector[126]
     ## deal with actor and starring
-    actor_vector = vector_float2string(vector_string2float(FeatureVector[102]) + vector_string2float(FeatureVector[48]))
+    actor_vector = vector_float2string(vector_string2float(FeatureVector[574]) + vector_string2float(FeatureVector[325]))
     fp = open("data.out2", 'w')
     fp.write(prequel_vector + "\n")
     fp.write(sequel_vector + "\n")
@@ -97,6 +134,8 @@ if __name__ == "__main__":
     
     KBid2ml = read_KBid2ml("movies_id.txt")
     index2KBid = read_index2KBid("entity2id.txt")
-    readVector("full_entity2vec.bern", index2KBid, KBid2ml)
-    
-    #readFeatureVector("full_relation2vec.bern")
+    #readVector("entity2vec.vec", index2KBid, KBid2ml)
+    #readVector2("entity2vec.vec", index2KBid)
+
+    #readFeature2("relation2vec.vec")
+    readFeatureVector("relation2vec.vec")

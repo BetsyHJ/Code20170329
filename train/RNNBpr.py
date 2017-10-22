@@ -36,7 +36,7 @@ def RNN_bpr(maxlen, inputDim, BPRlen = sample_num + 1, hiddenDim = 512):
     RNN_input = Input(shape=(maxlen, inputDim), dtype = 'float32', name = 'RNN_input')
     RNN_out = LSTM(hiddenDim, return_sequences = False, name = 'RNN')(RNN_input)
     RNN_out = Dropout(0.2, name = 'Dropout')(RNN_out)
-    RNN_out = Dense(inputDim, activation = 'relu', name = "Dense")(RNN_out)
+    RNN_out = Dense(inputDim, activation = 'tanh', name = "Dense")(RNN_out)
     
     BPR_input = Input(shape=(BPRlen, inputDim), dtype = 'float32', name = 'BPR_input')
     
@@ -68,15 +68,18 @@ def data_generator(sequences, maxlen, item_value, FeaLength):
     t_label = np.zeros(sample_num + 1)
     t_label[0] = 1
     for seq in sequences: # for each sequences
-        seqLength = len(seq)
-	if seqLength > 200:
-	    continue
         #translate the item into vector
         seq_vector = []
+	seq_New = []
         for item in seq:
-            seq_vector.append(item_value[item])
+	    if item in item_value:
+                seq_vector.append(item_value[item])
+		seq_New.append(item)
+	    else:
+		print "no item ppp:", item
+	seqLength = len(seq_New)
         #negative sample    
-        samples = neg_sample(seq, item_value) # return the vectors
+        samples = neg_sample(seq_New, item_value) # return the vectors
         #samples_size = len(samples)
         # using sliding window to get train data    
         for index in range(seqLength):
@@ -122,7 +125,12 @@ def saveModel(getRNNOuput, sequences, maxlen, item_value, FeaLength):
     # for every sequence we just need the final maxlen data, so we set Y as final item, default value
     sequences_FinalMaxlen = []
     for seq in sequences:
-        sequences_FinalMaxlen.append(seq[-maxlen : ] + [seq[-1]])
+	if len(seq) >= maxlen:
+            sequences_FinalMaxlen.append(seq[-maxlen : ] + [seq[-1]])
+	else:
+	    seq = seq * maxlen * 2
+	    print "seq is ", seq
+	    sequences_FinalMaxlen.append(seq[-maxlen : ] + [seq[-1]])
     #validX, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
     ValidX, _, _ = data_generator(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
     print ValidX.shape
