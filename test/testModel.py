@@ -176,7 +176,7 @@ if __name__ == "__main__":
 	    continue
         trueResult = UserItems[u]
 	## if we want to test the first item in the trueResult
-	trueResult = trueResult[0:1]
+	#trueResult = trueResult[0:1]
 
         candidateResult = candidates[u]
         t_P, t_R, t_MAP, t_MRR, t_HR, t_NDCG  = evaluate(trueResult, candidateResult, UsersVector[u], ItemsVector)

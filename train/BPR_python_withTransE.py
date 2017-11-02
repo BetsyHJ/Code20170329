@@ -240,7 +240,7 @@ if __name__ == "__main__":
     TransEDim, transE_value = proPrepare(TransEFile)
     transE_value_index = name2index(transE_value, item2index)
     # define the model
-    inputDim = 200
+    inputDim = 128
     print "the set of dimension is", inputDim
     item_indexMax, user_indexMax = len(index2item), len(index2user)
     model = bpr_withTransE(item_indexMax, user_indexMax, inputDim, TransEDim)

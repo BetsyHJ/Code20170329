@@ -30,8 +30,8 @@ def bpr(y_true, y_pred): #dim-2 1*d ; dim-2
     return K.mean(-K.log(K.sigmoid(T.diag(score) - score.T)), axis = -1)
 def get_R(X):
     Y, alpha = X[0], X[1]
-    ans = K.T.batched_dot(Y, alpha)
-    return ans
+    ans = K.batch_dot(Y, K.expand_dims(alpha, -1))
+    return K.squeeze(ans, -1)
 def RNN_bpr(maxlen, inputDim, BPRlen = sample_num + 1, hiddenDim = 512):
     RNN_input = Input(shape=(maxlen, inputDim), dtype = 'float32', name = 'RNN_input')
     RNN_out = LSTM(hiddenDim, return_sequences = False, name = 'RNN')(RNN_input)
@@ -99,9 +99,9 @@ def data_generator(sequences, maxlen, item_value, FeaLength):
     print trainX.shape, trainY.shape, train_label.shape
     #print "trainX is ", trainX
     return trainX, trainY, train_label
-def runModelBPR(model, sequences, maxlen, items_value, FeaLength, batch_num = 2000):
+def runModelBPR(model, sequences, maxlen, items_value, FeaLength, batch_num = 200):
     ## batch_num reset
-    if batch_num < len(sequences):
+    if batch_num > len(sequences):
         batch_num = len(sequences)
     batch_size = int(round(1.0 * len(sequences) / batch_num))
     for i in range(batch_num): #for the batch of the sequences
@@ -134,8 +134,8 @@ def saveModel(getRNNOuput, sequences, maxlen, item_value, FeaLength):
     #validX, _ = createData(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
     ValidX, _, _ = data_generator(sequences_FinalMaxlen, maxlen, item_value, FeaLength)
     print ValidX.shape
-    output = getRNNOuput([ValidX, 0])
-
+    output = getRNNOuput([ValidX, 0])[0]
+    print output.shape
     # save the output array into file
     for i in range(output.shape[0]):
         for j in range(output.shape[1]):
@@ -150,7 +150,7 @@ def saveModelByBatch(model, sequences, maxlen, item_value, FeaLength):
     ## want to get RNN result
     #getRNNOuput = theano.function([model.layers['RNN_input'].input], model.layers[layer].get_output(train=False), allow_input_downcast=True)
     #print "get start"
-    getRNNOuput = K.function([model.layers[0].input, K.learning_phase()], model.layers[4].output)
+    getRNNOuput = K.function([model.layers[0].input, K.learning_phase()], [model.layers[4].output])
     #getRNNOuput = K.function([model.layers[0].input, K.learning_phase()], model.layers[2].output)
     #print "get over"
     for i in range(batch_num): #for the batch of the sequences
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     model = RNN_bpr(maxlen, inputDim)
     print model.layers    
     #run the model
-    for epoch in range(10):
+    for epoch in range(50):
         runModelBPR(model, sequences, maxlen, items_value, FeaLength)
         #saveModelByBatch(model, sequences, maxlen, items_value, FeaLength)
 	print "the iter", epoch, " is over, now it is ", time.strftime("%Y-%m-%d %X",time.localtime())
